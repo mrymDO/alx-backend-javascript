@@ -7,7 +7,7 @@ export default class Building {
   }
 
   get sqft() {
-    if (typeof sqft !== 'number') {
+    if (typeof this._sqft !== 'number') {
       throw new TypeError('sqft must be a number.');
     }
     return this._sqft;
