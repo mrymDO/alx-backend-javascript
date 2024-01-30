@@ -2,8 +2,8 @@ const fs = require('fs');
 
 const countStudents = (path) => {
   try {
-    const content = fs.readFileSync(path, 'utf8').toString('utf-8').trim();
-    const students = content.split('\n');
+    const content = fs.readFileSync(path, 'utf8');
+    const students = content.split(/\r?\n/);
     const validStudents = students.filter((student) => student !== '');
     console.log(`Number of students: ${validStudents.length - 1}`);
 
