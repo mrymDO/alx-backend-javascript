@@ -3,12 +3,16 @@ const fs = require('fs');
 const countStudents = (path) => {
   try {
     const content = fs.readFileSync(path, 'utf8');
-    const students = content.split(/\r?\n/);
-    const validStudents = students.filter((student) => student !== '');
-    console.log(`Number of students: ${validStudents.length - 1}`);
+    const students = content.split(/\r?\n/).filter((student) => student.trim() !== '');
+
+    if (students.length < 1) {
+      throw new Error('Cannot load the database');
+    }
+
+    console.log(`Number of students: ${students.length}`);
 
     const fields = {};
-    validStudents.forEach((student, index) => {
+    students.forEach((student, index) => {
       if (index !== 0) {
         const fieldsArray = student.split(',');
         const field = fieldsArray[3];
