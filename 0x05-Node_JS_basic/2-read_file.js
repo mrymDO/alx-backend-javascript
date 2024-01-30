@@ -9,7 +9,7 @@ const countStudents = (path) => {
       throw new Error('Cannot load the database');
     }
 
-    console.log(`Number of students: ${students.length}`);
+    console.log(`Number of students: ${students.length - 1}`);
 
     const fields = {};
     students.forEach((student, index) => {
