@@ -1,27 +1,63 @@
 import readDatabase from '../utils';
 
+const VALID_MAJORS = ['CS', 'SWE'];
+
 class StudentsController {
-  static async getAllStudents(_, res) {
-    try {
-      const studentsData = await readDatabase('database.csv');
+  static getAllStudents(request, response) {
+    const dataPath = process.argv.length > 2 ? process.argv[2] : '';
 
-      const responseLines = ['This is the list of our students'];
+    readDatabase(dataPath)
+      .then((studentGroups) => {
+        const responseParts = ['This is the list of our students'];
+        const cmpFxn = (a, b) => {
+          if (a[0].toLowerCase() < b[0].toLowerCase()) {
+            return -1;
+          }
+          if (a[0].toLowerCase() > b[0].toLowerCase()) {
+            return 1;
+          }
+          return 0;
+        };
 
-      const sortedFields = Object.keys(studentsData).sort((a, b) => a.localeCompare(b));
-      for (const field of sortedFields) {
-        const studentsInField = studentsData[field];
-        const numberOfStudents = studentsInField.length;
-        const listOfFirstNames = studentsInField.join(', ');
+        for (const [field, group] of Object.entries(studentGroups).sort(cmpFxn)) {
+          responseParts.push([
+            `Number of students in ${field}: ${group.length}.`,
+            'List:',
+            group.map((student) => student.firstname).join(', '),
+          ].join(' '));
+        }
+        response.status(200).send(responseParts.join('\n'));
+      })
+      .catch((err) => {
+        response
+          .status(500)
+          .send(err instanceof Error ? err.message : err.toString());
+      });
+  }
 
-        const fieldLine = `Number of students in ${field}: ${numberOfStudents}. List: ${listOfFirstNames}`;
-        responseLines.push(fieldLine);
-      }
+  static getAllStudentsByMajor(request, response) {
+    const dataPath = process.argv.length > 2 ? process.argv[2] : '';
+    const { major } = request.params;
 
-      const responseBody = responseLines.join('\n');
-      res.status(200).send(responseBody);
-    } catch (error) {
-      res.status(500).send(`Cannot load the database\n${error.message}`);
+    if (!VALID_MAJORS.includes(major)) {
+      response.status(500).send('Major parameter must be CS or SWE');
+      return;
     }
+    readDatabase(dataPath)
+      .then((studentGroups) => {
+        let responseText = '';
+
+        if (Object.keys(studentGroups).includes(major)) {
+          const group = studentGroups[major];
+          responseText = `List: ${group.map((student) => student.firstname).join(', ')}`;
+        }
+        response.status(200).send(responseText);
+      })
+      .catch((err) => {
+        response
+          .status(500)
+          .send(err instanceof Error ? err.message : err.toString());
+      });
   }
 }
 
