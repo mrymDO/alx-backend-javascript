@@ -36,13 +36,12 @@ function generateOutput({ students, fields, length }) {
 }
 
 async function countStudents(fileName) {
-  try {
-    const data = await readFile(fileName);
-    const parsedData = parseStudentData(data);
-    return generateOutput(parsedData);
-  } catch (error) {
+  const data = await readFile(fileName).catch((error) => {
     throw error;
-  }
+  });
+
+  const parsedData = parseStudentData(data);
+  return generateOutput(parsedData);
 }
 
 const handleRootRequest = (response) => {
