@@ -9,11 +9,11 @@ function parseStudentData(data) {
   const fields = {};
   let length = 0;
 
-  const lines = data.toString().split('\n');
+  const lines = data.split('\n');
   for (let i = 0; i < lines.length; i += 1) {
     if (lines[i]) {
       length += 1;
-      const field = lines[i].toString().split(',');
+      const field = lines[i].split(',');
       const key = field[3];
 
       students[key] = students[key] ? [...students[key], field[0]] : [field[0]];
@@ -35,23 +35,27 @@ function generateOutput({ students, fields, length }) {
   return output;
 }
 
-app.get('/', (req, res) => {
-  res.send('Hello Holberton School!');
+async function countStudents(fileName) {
+  const data = await readFile(fileName, 'utf8');
+  const { students, fields, length } = parseStudentData(data);
+  return generateOutput({ students, fields, length });
+}
+
+app.get('/', (request, response) => {
+  response.send('Hello Holberton School!');
 });
 
-app.get('/students', async (req, res) => {
+app.get('/students', async (request, response) => {
   try {
-    const data = await readFile(process.argv[2], 'utf8');
-    const studentsData = parseStudentData(data);
-    const output = generateOutput(studentsData);
-    res.send(`This is the list of our students\n${output}`);
+    const output = await countStudents(process.argv[2].toString());
+    response.send(['This is the list of our students', output].join('\n'));
   } catch (error) {
-    res.status(404).send('Cannot load the database');
+    response.send('This is the list of our students\nCannot load the database');
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+  console.log(`Server is running at http://localhost:${port}/`);
 });
 
 module.exports = app;
