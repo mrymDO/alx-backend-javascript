@@ -1,6 +1,5 @@
 const request = require('request');
 const { expect } = require('chai');
-const app = require('./api');
 
 describe('aPI Integration Test', () => {
   const API_URL = 'http://localhost:7865';
@@ -19,21 +18,17 @@ describe('aPI Integration Test', () => {
   }));
 
   it('gET /cart/:id returns payment methods for valid cart ID', () => new Promise((done) => {
-    const validCartId = 123;
-
-    request(app)
-      .get(`/cart/${validCartId}`)
-      .expect(200)
-      .expect(`Payment methods for cart ${validCartId}`)
-      .end(done);
+    request.get(`${API_URL}/cart/123`, (_err, res, body) => {
+      expect(res.statusCode).to.be.equal(200);
+      expect(body).to.be.equal('Payment methods for cart 123');
+      done();
+    });
   }));
 
   it('gET /cart/:id returns 404 for an invalid cart ID', () => new Promise((done) => {
-    const invalidCartId = 'abc';
-
-    request(app)
-      .get(`/cart/${invalidCartId}`)
-      .expect(404)
-      .end(done);
+    request.get(`${API_URL}/cart/a-bc`, (_err, res, _body) => {
+      expect(res.statusCode).to.be.equal(404);
+      done();
+    });
   }));
 });
